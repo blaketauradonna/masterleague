@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Court Allocator by Performance Clustering</title>
+<title>Court Allocator with Waiting List</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-body { font-family: system-ui, sans-serif; background:#f8f9fb; padding:2rem; text-align:center; }
+body { font-family: system-ui, sans-serif; background:#f5f7fa; padding:2rem; text-align:center; }
 textarea { width:95%; height:240px; font-family:monospace; font-size:1rem; border-radius:8px; border:1px solid #ccc; padding:0.5rem; }
-input { width:60px; font-size:1rem; margin-left:0.5rem; }
+input { width:70px; font-size:1rem; margin-left:0.5rem; }
 button { background:#007aff; color:white; border:none; padding:0.7rem 1.3rem; border-radius:10px; cursor:pointer; margin-top:1rem; font-size:1rem; }
 button:hover { background:#005bb5; }
-#output { margin-top:1.5rem; background:white; border-radius:8px; border:1px solid #ddd; padding:1rem; text-align:left; white-space:pre-wrap; }
+#output { margin-top:1.5rem; background:white; border-radius:8px; border:1px solid #ddd; padding:1rem; text-align:left; white-space:pre-wrap; max-height:70vh; overflow:auto; font-family:monospace; }
 </style>
 </head>
 <body>
-<h2>🏸 Court Allocator (Score Clustering)</h2>
+<h2>🏸 Court Allocator with Waiting List (4–7 Players per Court)</h2>
 <p>Paste players (<b>First Last Score</b>)</p>
 <textarea id="inputArea" placeholder="Alice Brown 98
 David Lee 91
@@ -30,9 +30,13 @@ John Smith 85
 function process() {
   const input = document.getElementById("inputArea").value.trim();
   const numCourts = parseInt(document.getElementById("numCourts").value);
-  if (!input) return alert("Paste player list first!");
-  if (!numCourts || numCourts < 1) return alert("Enter valid court number.");
+  const outputEl = document.getElementById("output");
+  outputEl.textContent = "";
 
+  if (!input) return alert("Paste your player list first!");
+  if (!numCourts || numCourts < 1) return alert("Enter a valid number of courts.");
+
+  // Parse player list
   const lines = input.split(/\r?\n/).filter(Boolean);
   let players = [];
   lines.forEach(line => {
@@ -43,71 +47,45 @@ function process() {
     const last = parts.slice(1, -1).join(" ");
     if (!isNaN(score)) players.push({ first, last, score });
   });
-  if (!players.length) return alert("No valid players detected.");
 
-  // Sort by performance score (high → low)
-  players.sort((a, b) => b.score - a.score);
+  if (!players.length) return alert("No valid players detected!");
 
-  // Waiting list if overflow
-  const maxAllowed = numCourts * 7;
+  // Step 1: compute capacity
+  const capacity = numCourts * 7;
+
+  // Step 2: move players beyond capacity to waiting list (unsorted)
   let waitingList = [];
-  if (players.length > maxAllowed) {
-    waitingList = players.slice(maxAllowed);
-    players = players.slice(0, maxAllowed);
+  if (players.length > capacity) {
+    waitingList = players.slice(capacity);
+    players = players.slice(0, capacity);
   }
 
-  // Cluster players by score proximity
+  // Step 3: sort remaining players (eligible) by score
+  players.sort((a,b)=>b.score - a.score);
+
+  // Step 4: divide sorted players into courts (each 4–7)
+  const total = players.length;
   let courts = [];
-  let currentCourt = [];
-  const threshold = 8; // max score difference to stay in same court
+  let base = Math.floor(total / numCourts);
+  let remainder = total % numCourts;
+  if (base < 4) base = 4;
 
-  for (let i = 0; i < players.length; i++) {
-    const p = players[i];
-    if (currentCourt.length === 0) {
-      currentCourt.push(p);
-    } else {
-      const diff = Math.abs(currentCourt[currentCourt.length - 1].score - p.score);
-      if ((diff <= threshold && currentCourt.length < 7) || currentCourt.length < 4) {
-        currentCourt.push(p);
-      } else {
-        courts.push(currentCourt);
-        currentCourt = [p];
-      }
-    }
-  }
-  if (currentCourt.length) courts.push(currentCourt);
-
-  // If any court <4 → merge with closest in avg score
-  for (let i = 0; i < courts.length; i++) {
-    if (courts[i].length < 4 && courts.length > 1) {
-      const avg = avgScore(courts[i]);
-      let best = 0, bestDiff = Infinity;
-      for (let j = 0; j < courts.length; j++) {
-        if (i === j) continue;
-        const diff = Math.abs(avg - avgScore(courts[j]));
-        if (diff < bestDiff) { bestDiff = diff; best = j; }
-      }
-      courts[best] = courts[best].concat(courts[i]);
-      courts.splice(i, 1);
-      i--;
-    }
+  let start = 0;
+  for (let i = 0; i < numCourts; i++) {
+    let size = base + (remainder > 0 ? 1 : 0);
+    remainder--;
+    let group = players.slice(start, start + size);
+    if (group.length > 0) courts.push(group);
+    start += size;
   }
 
-  // Trim courts if more than user entered
-  if (courts.length > numCourts) {
-    while (courts.length > numCourts) {
-      const last = courts.pop();
-      let best = 0, bestDiff = Infinity;
-      const avg = avgScore(last);
-      for (let j = 0; j < courts.length; j++) {
-        const diff = Math.abs(avg - avgScore(courts[j]));
-        if (diff < bestDiff) { bestDiff = diff; best = j; }
-      }
-      courts[best] = courts[best].concat(last);
-    }
+  // Merge if last court < 4 players
+  if (courts.length > 1 && courts[courts.length - 1].length < 4) {
+    const last = courts.pop();
+    courts[courts.length - 1].push(...last);
   }
 
-  // Round match patterns
+  // Step 5: define match patterns
   const matchPatterns = {
     4: [[[1,4],[2,3]],[[1,2],[3,4]],[[1,3],[2,4]]],
     5: [[[1,4],[2,3]],[[1,2],[3,5]],[[2,5],[3,4]],[[1,3],[4,5]],[[1,5],[2,4]]],
@@ -115,21 +93,25 @@ function process() {
     7: [[[1,6],[2,7]],[[1,5],[2,6]],[[4,5],[3,7]],[[1,4],[3,5]],[[1,2],[6,7]],[[3,4],[5,7]],[[2,3],[4,6]]]
   };
 
-  // Build output
+  // Step 6: build output
   let out = "";
   courts.forEach((court, i) => {
     court.sort((a,b)=>b.score-a.score);
     out += `🏐 Court ${i+1} (${court.length} players)\n`;
     court.forEach((p,j)=> out += `${j+1}. ${p.first} ${p.last} — ${p.score}\n`);
     out += "\n";
+
     const pattern = matchPatterns[court.length];
     if (pattern) {
       pattern.forEach((round,rIdx)=>{
-        const tA = round[0].map(n=>court[n-1]?.first||`P${n}`).join(" & ");
-        const tB = round[1].map(n=>court[n-1]?.first||`P${n}`).join(" & ");
-        out += `Round ${rIdx+1}: (${tA}) vs (${tB})\n`;
+        const teamA = round[0].map(n=>court[n-1]?.first||`P${n}`).join(" & ");
+        const teamB = round[1].map(n=>court[n-1]?.first||`P${n}`).join(" & ");
+        out += `Round ${rIdx+1}: (${teamA}) vs (${teamB})\n`;
+        out += "Score: ____________\n\n";
       });
-    } else out += "No match pattern for this court size.\n";
+    } else {
+      out += "No match pattern for this court size.\n";
+    }
     out += "\n";
   });
 
@@ -138,26 +120,34 @@ function process() {
     waitingList.forEach(p=> out += `${p.first} ${p.last} — ${p.score}\n`);
   }
 
-  document.getElementById("output").textContent = out.trim();
+  outputEl.textContent = out.trim();
 
-  // Export to Excel
+  // Step 7: Excel export
   const rows = [];
   courts.forEach((court, i) => {
     rows.push({ Court:`Court ${i+1}`, PlayerCount:court.length });
     court.forEach(p => rows.push({ First:p.first, Last:p.last, Score:p.score }));
+    rows.push({});
+    const pattern = matchPatterns[court.length];
+    if (pattern) {
+      pattern.forEach((round,rIdx)=>{
+        const teamA = round[0].map(n=>court[n-1]?.first||`P${n}`).join(" & ");
+        const teamB = round[1].map(n=>court[n-1]?.first||`P${n}`).join(" & ");
+        rows.push({ Round:`Round ${rIdx+1}`, Match:`(${teamA}) vs (${teamB})`, Score:"" });
+      });
+    }
     rows.push({});
   });
   if (waitingList.length) {
     rows.push({ Court:"Waiting List" });
     waitingList.forEach(p => rows.push({ First:p.first, Last:p.last, Score:p.score }));
   }
+
   const sheet = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, sheet, "Courts");
   XLSX.writeFile(wb, "court_allocation.xlsx");
 }
-
-function avgScore(court){ return court.reduce((s,p)=>s+p.score,0)/court.length; }
 </script>
 </body>
 </html>
