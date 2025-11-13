@@ -16,13 +16,13 @@ button:hover { background:#005bb5; }
 </head>
 <body>
 <h2>🏸 Court Allocator with Waiting List (4–7 Players per Court)</h2>
-<p>Paste players (<b>First Last Score</b>)</p>
-<textarea id="inputArea" placeholder="Alice Brown 98
-David Lee 91
-Maria Chen 90
-John Smith 85
+<p>Paste players (<b>First Last Rating</b>)</p>
+<textarea id="inputArea" placeholder="Alice Brown 3.98
+David Lee 1.91
+Maria Chen 2.90
+John Smith 1.85
 ..."></textarea>
-<p>Number of courts: <input type="number" id="numCourts" value="3" min="1"></p>
+<p>Number of courts: <input type="number" id="numCourts" value="5" min="1"></p>
 <button onclick="process()">Process</button>
 <pre id="output"></pre>
 
@@ -42,10 +42,10 @@ function process() {
   lines.forEach(line => {
     const parts = line.split(/\s+/);
     if (parts.length < 3) return;
-    const score = parseFloat(parts[parts.length - 1]);
+    const rating = parseFloat(parts[parts.length - 1]);
     const first = parts[0];
     const last = parts.slice(1, -1).join(" ");
-    if (!isNaN(score)) players.push({ first, last, score });
+    if (!isNaN(rating)) players.push({ first, last, rating });
   });
 
   if (!players.length) return alert("No valid players detected!");
@@ -60,8 +60,8 @@ function process() {
     players = players.slice(0, capacity);
   }
 
-  // Step 3: sort remaining players (eligible) by score
-  players.sort((a,b)=>b.score - a.score);
+  // Step 3: sort remaining players (eligible) by rating
+  players.sort((a,b)=>b.rating - a.rating);
 
   // Step 4: divide sorted players into courts (each 4–7)
   const total = players.length;
@@ -96,9 +96,9 @@ function process() {
   // Step 6: build output
   let out = "";
   courts.forEach((court, i) => {
-    court.sort((a,b)=>b.score-a.score);
+    court.sort((a,b)=>b.rating-a.rating);
     out += `🏐 Court ${i+1} (${court.length} players)\n`;
-    court.forEach((p,j)=> out += `${j+1}. ${p.first} ${p.last} — ${p.score}\n`);
+    court.forEach((p,j)=> out += `${j+1}. ${p.first} ${p.last} — ${p.rating}\n`);
     out += "\n";
 
     const pattern = matchPatterns[court.length];
@@ -107,7 +107,7 @@ function process() {
         const teamA = round[0].map(n=>court[n-1]?.first||`P${n}`).join(" & ");
         const teamB = round[1].map(n=>court[n-1]?.first||`P${n}`).join(" & ");
         out += `Round ${rIdx+1}: (${teamA}) vs (${teamB})\n`;
-        out += "Score: ____________\n\n";
+        out += "Score: \n\n";
       });
     } else {
       out += "No match pattern for this court size.\n";
@@ -117,36 +117,11 @@ function process() {
 
   if (waitingList.length) {
     out += `⏳ Waiting List (${waitingList.length} players)\n`;
-    waitingList.forEach(p=> out += `${p.first} ${p.last} — ${p.score}\n`);
+    waitingList.forEach(p=> out += `${p.first} ${p.last} — ${p.rating}\n`);
   }
 
   outputEl.textContent = out.trim();
 
-  // Step 7: Excel export
-  const rows = [];
-  courts.forEach((court, i) => {
-    rows.push({ Court:`Court ${i+1}`, PlayerCount:court.length });
-    court.forEach(p => rows.push({ First:p.first, Last:p.last, Score:p.score }));
-    rows.push({});
-    const pattern = matchPatterns[court.length];
-    if (pattern) {
-      pattern.forEach((round,rIdx)=>{
-        const teamA = round[0].map(n=>court[n-1]?.first||`P${n}`).join(" & ");
-        const teamB = round[1].map(n=>court[n-1]?.first||`P${n}`).join(" & ");
-        rows.push({ Round:`Round ${rIdx+1}`, Match:`(${teamA}) vs (${teamB})`, Score:"" });
-      });
-    }
-    rows.push({});
-  });
-  if (waitingList.length) {
-    rows.push({ Court:"Waiting List" });
-    waitingList.forEach(p => rows.push({ First:p.first, Last:p.last, Score:p.score }));
-  }
-
-  const sheet = XLSX.utils.json_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, sheet, "Courts");
-  XLSX.writeFile(wb, "court_allocation.xlsx");
 }
 </script>
 </body>
