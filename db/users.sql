@@ -1,3 +1,6 @@
+CREATE DATABASE IF NOT EXISTS user_management;
+USE user_management;
+
 CREATE TABLE users (
 	phone TEXT PRIMARY KEY,
 	firstname VARCHAR(50) NOT NULL,
