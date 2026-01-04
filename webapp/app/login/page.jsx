@@ -48,6 +48,7 @@ export default function LoginPage() {
         <input name="password" type="password" placeholder="Password" required />
         <br /><br />
         <button type="submit">Submit</button>
+        <a href="/register">          New user? <u>Register</u></a>
       </form>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}

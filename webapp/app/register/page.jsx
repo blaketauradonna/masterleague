@@ -43,43 +43,37 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit}>
         <br></br>
 
-        First Name:
-        <input name="firstname" placeholder="First Name" required />
+        First name
+        <span className="required-indicator"></span>
+        <input name="firstname" placeholder="First name" required />
         <br /><br />
 
-        Last Name:
-        <input name="lastname" placeholder="Last Name" required />
+        Last name
+        <span className="required-indicator"></span>
+        <input name="lastname" placeholder="Last name" required aria-required="true"/>
+
         <br /><br />
 
-        DUPR ID:
-        <div className="tooltip">?
-          <span className="tooltiptext">Optional for sign up, but mandatory for events. You may either enter your DUPR ID now, or before registering any events. https://dashboard.dupr.com/signup </span>
+        DUPR ID
+        <span className="required-indicator"></span>
+        <br/>
+        <a href="https://dashboard.dupr.com/signup">Get your DUPR ID</a>
+        <div className="tooltip"> [ ? ]
+          <span className="tooltiptext">Your DUPR ID can be found under your profile page at DUPR.com [hyperlink]. Registration required. </span>
         </div>
-        <input name="duprid" placeholder="DUPR ID" />
+        <input name="duprid" placeholder="DUPR ID" required />
         <br /><br />
 
-        Email:
-        <input name="email" placeholder="Email" required />
+        Email
+        <span className="required-indicator"></span>
+        <input name="email" placeholder="Email address" required />
         <br /><br />
 
-        Singler Player Level:
-        <select value={single_level} onChange={e => setSingleLevel(e.target.value)} required>
-          <option value="" disabled>
-            Single Player Levels
-          </option>
-
-          {levels.map(lv => (
-            <option key={lv} value={lv}>
-              {lv}
-            </option>
-          ))}
-        </select>
-        <br /><br />
-
-        Double Player Level:
+        Doubles player level
+        <span className="required-indicator"></span>
         <select value={double_level} onChange={e => setDoubleLevel(e.target.value)} required>
           <option value="" disabled>
-            Double Player Levels
+            Select
           </option>
 
           {levels.map(lv => (
@@ -90,10 +84,31 @@ export default function RegisterPage() {
         </select>
         <br /><br />
 
-        Sex:
+        <button type="button" onClick={() => window.location.href = "https://usapickleball.org/skill-level/"}>Find your skill levels</button>
+        <br /><br />
+
+        Singles player level
+        <span className="required-indicator"></span>
+        <select value={single_level} onChange={e => setSingleLevel(e.target.value)} required>
+          <option value="" disabled>
+            Select
+          </option>
+
+          {levels.map(lv => (
+            <option key={lv} value={lv}>
+              {lv}
+            </option>
+          ))}
+        </select>
+        <br /><br />
+
+        Sex
+        <div className="tooltip"> [ ? ]
+          <span className="tooltiptext">May be used for categories, etc. </span>
+        </div>
         <select value={gender} onChange={e => setGender(e.target.value)}>
           <option value="" disabled>
-            Select Gender
+            Select gender
           </option>
 
           {genders.map(g => (
@@ -104,11 +119,21 @@ export default function RegisterPage() {
         </select>
         <br /><br />
 
+        Date of birth
+        <div className="tooltip"> [ ? ]
+          <span className="tooltiptext">May be used for categories, etc. </span>
+        </div>
+        <input type="date" name="birthdate" id="birthdate" />
+        <br /><br />
 
-        City:
+        Club (if any)
+        <input type="text" name="club" id="club" />
+        <br /><br />
+
+        Town/city
         <select value={city} onChange={e => setCity(e.target.value)}>
           <option value="" disabled>
-            Select City
+            Select
           </option>
 
           {cities.map(c => (
@@ -119,15 +144,8 @@ export default function RegisterPage() {
         </select>
         <br /><br />
 
-        Club:
-        <input type="text" name="club" id="club" />
-        <br /><br />
-
-        Date of Birth:
-        <input type="date" name="birthdate" id="birthdate" />
-        <br /><br />
-
-        Password:
+        Password
+        <span className="required-indicator"></span>
         <input name="password" type="password" placeholder="Password" required />
         <br /><br />
 
