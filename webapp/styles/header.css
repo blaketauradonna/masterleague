@@ -3,7 +3,21 @@
   --container-padding: 16px;
 }
 
-.header {
+/* Headers */
+.lobby-header {
+  position: fixed;
+  top: 0;
+  height: 56px;
+  width: 100%;
+  background: black;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  z-index: 1000;
+  position: fixed;
+}
+
+.masterleague-header {
   position: fixed;
   top: 0;
   height: 56px;
@@ -16,6 +30,8 @@
   position: fixed;
 }
 
+/* MENU BUTTON*/
+
 .menu-btn {
   font-size: 24px;
   background: none;
@@ -27,6 +43,8 @@
 .menu-btn.active {
   transform: rotate(90deg);
 }
+
+/* DROPDOWN NAVIGATION */
 
 .dropdown {
   position: absolute;
@@ -50,11 +68,6 @@
   color: #ffffff;
   text-decoration: none;
   transition: background 0.2s ease, color 0.2s ease;
-}
-
-.nav-item:hover {
-  background: var(--masterleague-grey);
-  color: black;
 }
 
 .nav-item.active {

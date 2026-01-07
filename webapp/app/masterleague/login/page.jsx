@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
+export default function MasterleagueLoginPage() {
   const router = useRouter();
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
@@ -12,7 +12,7 @@ export default function LoginPage() {
   useEffect(() => {
     fetch('/api/auth/profile')
       .then(res => {
-        if (res.ok) router.push('/profile'); // already logged in
+        if (res.ok) router.push('/masterleague/profile'); // already logged in
       })
       .catch(() => {});
   }, []);
@@ -31,7 +31,7 @@ export default function LoginPage() {
 
     const data = await res.json();
     if (!res.ok) setError(data.error);
-    else router.push('/profile'); // redirect after login
+    else router.push('/masterleague/profile'); // redirect after login
   }
 
   return (
@@ -48,7 +48,7 @@ export default function LoginPage() {
         <input name="password" type="password" placeholder="Password" required />
         <br /><br />
         <button type="submit">Submit</button>
-        <a href="/register">          New user? <u>Register</u></a>
+        <a href="/masterleague/register">          New user? <u>Register</u></a>
       </form>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}

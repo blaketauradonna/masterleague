@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-export default function DropdownNav({ open, close }) {
+export default function LobbyDropdownNav({ open, close }) {
   const pathname = usePathname();
   const ref = useRef(null);
 
@@ -24,10 +24,7 @@ export default function DropdownNav({ open, close }) {
 
   const navItems = [
     { href: "/", label: "Home" },
-    { href: "/profile", label: "Profile" },
-	{ href: "/fixtures", label: "Fixtures" },
-	{ href: "/contact", label: "Contact" },
-    { href: "/about", label: "About" },
+    { href: "/masterleague", label: "MasterLeague" }
   ];
 
   return (
@@ -48,6 +45,9 @@ export default function DropdownNav({ open, close }) {
           {item.label}
         </Link>
       ))}
+	  <a>
+		More coming - TBA
+	  </a>
     </nav>
   );
 }

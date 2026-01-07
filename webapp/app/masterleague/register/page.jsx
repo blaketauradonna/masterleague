@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 
-export default function RegisterPage() {
+export default function MasterleagueRegisterPage() {
   const [message, setMessage] = useState('');
 
   // Player level state
@@ -84,7 +84,7 @@ export default function RegisterPage() {
         </select>
         <br /><br />
 
-        <button type="button" onClick={() => window.location.href = "https://usapickleball.org/skill-level/"}>Find your skill levels</button>
+        <button type="button" onClick={() => window.open("https://usapickleball.org/skill-level/", "_blank", "noopener,noreferrer")}>Find your skill levels</button>
         <br /><br />
 
         Singles player level

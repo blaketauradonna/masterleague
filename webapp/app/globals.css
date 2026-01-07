@@ -33,7 +33,6 @@ header {
   width: 100%;
   background-color: var(--masterleague-blue-dark);
   color: white;
-  padding: 1rem;
   text-align: center;
   flex-shrink: 0;
 }
@@ -41,7 +40,7 @@ header {
 /* Footer sticks to bottom */
 footer {
   width: 100%;
-  background-color: var(--masterleague-blue-dark);
+  background-color: var(--masterleague-grey);
   color: white;
   padding: 1rem;
   text-align: center;
@@ -53,7 +52,6 @@ footer {
 main {
   flex: 1;              /* take all remaining height */
   width: 100%;          /* full width */
-  padding: 1.5rem;      /* spacing inside */
   overflow-y: auto;     /* scroll if content is long */
 }
 /* Form inputs */
